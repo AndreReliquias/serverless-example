@@ -1,0 +1,4 @@
+OFFLINE: false
+
+REGION: ${self:custom.region}
+PREFIX: ${self:custom.prefix}

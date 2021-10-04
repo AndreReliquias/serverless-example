@@ -1,0 +1,77 @@
+service: serverless-example
+
+frameworkVersion: '2'
+configValidationMode: off
+
+provider:
+  name: aws
+  runtime: ruby2.7
+  lambdaHashingVersion: 20201221
+  stage: ${opt:stage, 'prod'}
+  region: us-east-1
+  environment:
+    ${file(./configs/${self:provider.stage}.yml)}
+
+plugins:
+  - serverless-offline-sqs
+  - serverless-offline
+  - serverless-ruby-layer
+
+iamRoleStatements:
+  - Effect: Allow
+    Action:
+      - lambda: "*"
+    Resource: "*"
+
+  - Effect: Allow
+    Action:
+      - sqs: "*"
+    Resource: "arn:aws:sqs:*:*:*"
+
+functions:
+  first_function:
+    handler: handler.first_function
+
+  second_function:
+    handler: handler.second_function
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - myFirstQueue
+              - Arn
+
+  third_function:
+    handler: handler.third_function
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - mySecondQueue
+              - Arn
+
+resources:
+  Resources:
+    myFirstQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: myFirstQueue
+
+    mySecondQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: mySecondQueue
+
+custom:
+  region: ${self:provider.region}
+  stage: ${opt:stage, self:provider.stage}
+  prefix: ${self:custom.stage}-${self:service}
+
+  serverless-offline-sqs:
+    autoCreate: true
+    apiVersion: '2012-11-05'
+    endpoint: http://0.0.0.0:9324
+    region: eu-east-1
+    accessKeyId: root
+    secretAccessKey: root
+    skipCacheInvalidation: false

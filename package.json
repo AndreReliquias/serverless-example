@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "serverless-lift": "^1.9.1",
+    "serverless-offline": "^8.2.0",
+    "serverless-offline-sqs": "^5.0.0",
+    "serverless-ruby-layer": "^1.5.0"
+  }
+}
